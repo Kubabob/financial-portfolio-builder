@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import LinePlot from "@/components/ui/chart";
 
 export default function FinancesTicker() {
     const [data, setData] = useState([]);
@@ -23,6 +24,7 @@ export default function FinancesTicker() {
         ? Object.keys(sample)
         : [];
 
+
     if (loading) {
         return "Loading...";
     }
@@ -30,11 +32,16 @@ export default function FinancesTicker() {
         // <p>{content}</p>
         <>
             {/* {header.map((key) => <p key={key}>{key}</p>)} */}
-            <div className="flex flex-row gap-4">
-                {header.map((key) => (
-                    <Button key={key}>{key}</Button>
-                ))}
-            </div>
+            {(() => {
+                const highs = Array.isArray(data)
+                    ? data
+                            .map((item) =>
+                                item && typeof item === "object" && "high" in item ? Number((item as any).high) : undefined
+                            )
+                            .filter((v): v is number => v !== undefined)
+                    : [];
+                return <LinePlot data={highs} marginTop={100} />;
+            })()}
         </>
     );
 }
