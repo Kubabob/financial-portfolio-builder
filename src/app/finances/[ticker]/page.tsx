@@ -32,7 +32,7 @@ export default function FinancesTicker() {
             {/* {header.map((key) => <p key={key}>{key}</p>)} */}
             <div className="flex flex-row gap-4">
                 {header.map((key) => (
-                    <Button>{key}</Button>
+                    <Button key={key}>{key}</Button>
                 ))}
             </div>
         </>
