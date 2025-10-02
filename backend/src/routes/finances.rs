@@ -47,8 +47,6 @@ pub async fn get_quotes_for_ticker(
         .await
         .expect("Failed to get quotes");
 
-    println!("{:#?}", &quotes);
-
     let response: Vec<QuoteResponse> = quotes.into_iter().map(QuoteResponse::from).collect();
 
     (StatusCode::OK, Json(response))
