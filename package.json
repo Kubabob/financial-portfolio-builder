@@ -2,11 +2,17 @@
   "name": "financial-portfolio-builder",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
+"scripts": {
     "generate:types": "cd shared && cargo test export_bindings",
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
+    "dev:backend": "cd backend && cargo run",
+    "dev:frontend": "next dev --turbopack",
+    "dev": "pnpm run dev:backend & pnpm run dev:frontend",
+    "build:backend": "cd backend && cargo build --release",
+    "build:frontend": "next build --turbopack",
+    "build": "pnpm run build:backend && pnpm run build:frontend",
+    "start:backend": "cd backend && cargo run --release",
+    "start:frontend": "next start",
+    "start": "pnpm run start:backend & pnpm run start:frontend",
     "lint": "eslint"
   },
   "dependencies": {
