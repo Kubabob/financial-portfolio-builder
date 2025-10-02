@@ -11,7 +11,7 @@
     "build:frontend": "next build --turbopack",
     "build": "pnpm run build:backend && pnpm run build:frontend",
     "start:backend": "cd backend && cargo run --release",
-    "start:frontend": "next start",
+    "start:frontend": "next start --port 3001",
     "start": "pnpm run start:backend & pnpm run start:frontend",
     "lint": "eslint"
   },
