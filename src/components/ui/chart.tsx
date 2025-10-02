@@ -107,6 +107,20 @@ export function InteractiveChart({
             .range([height, 0])
             .nice();
 
+        // Provide a tick formatter on the scale so d3.axisLeft(yScale) will pick it up.
+        // Use scientific notation for very large/small numbers, otherwise use a readable fixed format.
+        (yScale as any).tickFormat = (count: number) => {
+            const sci = d3.format(".2e");    // scientific notation
+            const fixed = d3.format(",.2f"); // comma separated with 2 decimals
+
+            return (d: number) => {
+            const abs = Math.abs(d);
+            // Use scientific notation for very large or very small numbers
+            if (d !== 0 && (abs >= 1e6 || abs < 1e-3)) return sci(d);
+            return fixed(d);
+            };
+        };
+
         // Create clip path for zooming
         svg.append("defs").append("clipPath")
             .attr("id", "clip")
