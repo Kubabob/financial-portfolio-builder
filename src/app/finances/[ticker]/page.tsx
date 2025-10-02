@@ -1,7 +1,6 @@
 'use client'
 
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
 export default function FinancesTicker() {
@@ -30,13 +29,12 @@ export default function FinancesTicker() {
     return (
         // <p>{content}</p>
         <>
-            <p>hi</p>
-            {header.map((key) => <p key={key}>{key}</p>)}
-            {/* {header.map((key) => {
-                <Checkbox id={key}>
-                    <Label htmlFor={key}>{key}</Label>
-                </Checkbox>
-            })} */}
+            {/* {header.map((key) => <p key={key}>{key}</p>)} */}
+            <div className="flex flex-row gap-4">
+                {header.map((key) => (
+                    <Button>{key}</Button>
+                ))}
+            </div>
         </>
     );
 }
