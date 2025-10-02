@@ -5,6 +5,4 @@ edition = "2024"
 
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
-
-[dev-dependencies]
 ts-rs = "11.0.1"
