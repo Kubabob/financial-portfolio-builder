@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "generate:types": "cd shared && cargo test export_bindings",
-    "dev:backend": "cd backend && cargo run",
-    "dev:frontend": "next dev --turbopack",
+    "dev:backend": "pnpm run generate:types && cd backend && cargo run",
+    "dev:frontend": "next dev --turbopack --port 3001",
     "dev": "pnpm run dev:backend & pnpm run dev:frontend",
-    "build:backend": "cd backend && cargo build --release",
+    "build:backend": "pnpm run generate:types && cd backend && cargo build --release",
     "build:frontend": "next build --turbopack",
     "build": "pnpm run build:backend && pnpm run build:frontend",
     "start:backend": "cd backend && cargo run --release",
-    "start:frontend": "next start",
+    "start:frontend": "next start --port 3001",
     "start": "pnpm run start:backend & pnpm run start:frontend",
     "lint": "eslint"
   },
