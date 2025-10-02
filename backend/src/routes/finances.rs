@@ -9,12 +9,7 @@ use serde::Deserialize;
 use yahoo_finance_api::Quote;
 
 use super::super::services::finances::get_quotes;
-
-#[derive(Deserialize)]
-pub struct QuoteQuery {
-    start: String,
-    end: String,
-}
+use shared::models::QuoteQuery;
 
 pub async fn get_quotes_for_ticker(
     Path(ticker): Path<String>,
