@@ -94,12 +94,15 @@ export function InteractiveChart({
             .domain(d3.extent(chartData, d => d[xAxisKey] as Date) as [Date, Date])
             .range([0, width]);
 
-        const allValues: number[] = availableKeys.flatMap(key =>
-            chartData.map(d => d[key] as number).filter(v => !isNaN(v))
-        );
+        // Only include values from visible series for y-axis scaling
+        const allValues: number[] = availableKeys
+            .filter(key => visibleSeries[key]) // Only consider visible series
+            .flatMap(key =>
+                chartData.map(d => d[key] as number).filter(v => !isNaN(v))
+            );
 
         const yScale: d3.ScaleLinear<number, number> = d3.scaleLinear()
-            .domain(d3.extent(allValues) as [number, number])
+            .domain(allValues.length > 0 ? d3.extent(allValues) as [number, number] : [0, 1])
             .range([height, 0]);
 
         // Create axes
@@ -247,7 +250,7 @@ export function useChartData(ticker: string, start?: string, end?: string): {
                 if (start) params.append('start', start);
                 if (end) params.append('end', end);
 
-                const response = await fetch(`/api/finances/${ticker}?${params}`);
+                const response = await fetch(`http://localhost:3000/finances/${ticker}?${params}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
 
                 const result = await response.json();

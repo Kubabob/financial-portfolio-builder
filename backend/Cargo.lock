@@ -114,6 +114,7 @@ dependencies = [
  "time",
  "tokio",
  "tokio-test",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
  "yahoo_finance_api",
