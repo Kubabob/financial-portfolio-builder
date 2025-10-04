@@ -22,7 +22,7 @@ export default function Finances() {
             setLoading(true)
             try {
                 const response = await fetch(
-                    `http://localhost:3000/finances/${ticker}?start=${formatDateForApi(
+                    `http://localhost:3000/api/v1/finances/${ticker}?start=${formatDateForApi(
                         start
                     )}&end=${formatDateForApi(end)}`
                 )
@@ -56,7 +56,6 @@ export default function Finances() {
                             value={ticker}
                             onChange={(e) => {
                                 setTicker(e.target.value)
-                                // handleFetchData
                             }}
                             className="h-full w-32"
                         />

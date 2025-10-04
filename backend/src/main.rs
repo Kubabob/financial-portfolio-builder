@@ -8,7 +8,7 @@ use tower_http::cors::{Any, CorsLayer};
 
 use tracing_subscriber;
 
-use routes::finances::get_quotes_for_ticker;
+use routes::finances::get_quotes_for_ticker_v1;
 
 #[tokio::main]
 async fn main() {
@@ -25,7 +25,7 @@ async fn main() {
         // `GET /` goes to `root`
         .without_v07_checks()
         .route("/", get(root))
-        .route("/finances/{ticker}", get(get_quotes_for_ticker))
+        .route("/api/v1/finances/{ticker}", get(get_quotes_for_ticker_v1))
         .layer(cors);
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
