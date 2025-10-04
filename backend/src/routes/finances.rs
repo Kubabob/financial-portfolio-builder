@@ -12,7 +12,7 @@ pub async fn get_quotes_for_ticker(
     Path(ticker): Path<String>,
     Query(props): Query<QuoteQuery>,
 ) -> (StatusCode, Json<Vec<Quote>>) {
-    println!("Quotes for ticker: {:?}", &ticker);
+    // println!("Quotes for ticker: {:?}", &ticker);
 
     let quotes = get_quotes(&ticker, &props.start, &props.end)
         .await
