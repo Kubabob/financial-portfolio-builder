@@ -101,7 +101,7 @@ export function DateTimePicker({ dateTime, onChange }: DateTimePickerProps) {
                 step="1"
                 value={time}
                 onChange={handleTimeChange}
-                className="h-full w-[90px] text-sm bg-background [&::-webkit-calendar-picker-indicator]:hidden"
+                className="h-full text-sm bg-background [&::-webkit-calendar-picker-indicator]:hidden"
             />
         </div>
     )
