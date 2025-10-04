@@ -18,19 +18,21 @@ export default function Finances() {
     })
 
     const fetchData = async (ticker: string, start: Date, end: Date) => {
-        setLoading(true)
-        try {
-            const response = await fetch(
-                `http://localhost:3000/finances/${ticker}?start=${formatDateForApi(
-                    start
-                )}&end=${formatDateForApi(end)}`
-            )
-            const result = await response.json()
-            setData(result)
-        } catch (error) {
-            console.error('Error fetching data:', error)
-        } finally {
-            setLoading(false)
+        if (ticker) {
+            setLoading(true)
+            try {
+                const response = await fetch(
+                    `http://localhost:3000/finances/${ticker}?start=${formatDateForApi(
+                        start
+                    )}&end=${formatDateForApi(end)}`
+                )
+                const result = await response.json()
+                setData(result)
+            } catch (error) {
+                console.error('Error fetching data:', error)
+            } finally {
+                setLoading(false)
+            }
         }
     }
 
@@ -86,13 +88,19 @@ export default function Finances() {
                 </div>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    Loading...
-                </div>
+            {ticker ? (
+                loading ? (
+                    <div className="flex justify-center items-center h-64">
+                        Loading...
+                    </div>
+                ) : (
+                    <div className="mt-4">
+                        <LinePlot data={data} />
+                    </div>
+                )
             ) : (
-                <div className="mt-4">
-                    <LinePlot data={data} />
+                <div className="flex justify-center items-center h-64">
+                    Write ticker to see the plot.
                 </div>
             )}
         </>
