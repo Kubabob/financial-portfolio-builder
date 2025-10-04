@@ -1,32 +1,21 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useEffect, useState } from 'react'
-// import { useParams } from 'next/navigation'
 import LinePlot from '@/components/ui/chart'
 import { DateTimePicker } from '@/components/dateTimePicker'
 import { formatDateForApi } from '@/lib/utils'
 
 export default function FinancesTicker() {
-    // const params = useParams()
-    // const ticker = (params.ticker as string) || 'AAPL'
-
     const [ticker, setTicker] = useState<string>('AAPL')
     const [data, setData] = useState<Record<string, unknown>[]>([])
     const [loading, setLoading] = useState(true)
-    const [endDate, setEndDate] = useState<Date>(
-        // new Date('2020-01-10T00:00:00Z')
-        new Date()
-    )
-    const [startDate, setStartDate] = useState<Date>(
-        // new Date('2020-01-01T00:00:00Z')
-        () => {
-            const d = new Date()
-            d.setMonth(d.getMonth() - 1)
-            return d
-        }
-    )
+    const [endDate, setEndDate] = useState<Date>(new Date())
+    const [startDate, setStartDate] = useState<Date>(() => {
+        const d = new Date()
+        d.setMonth(d.getMonth() - 1)
+        return d
+    })
 
     const fetchData = async (ticker: string, start: Date, end: Date) => {
         setLoading(true)
