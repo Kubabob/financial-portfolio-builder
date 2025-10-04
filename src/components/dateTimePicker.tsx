@@ -1,12 +1,11 @@
 'use client'
 
-import * as React from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronDownIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
     Popover,
     PopoverContent,
@@ -19,9 +18,9 @@ type DateTimePickerProps = {
 }
 
 export function DateTimePicker({ dateTime, onChange }: DateTimePickerProps) {
-    const [open, setOpen] = React.useState(false)
-    const [date, setDate] = React.useState<Date | undefined>(dateTime)
-    const [time, setTime] = React.useState(
+    const [open, setOpen] = useState(false)
+    const [date, setDate] = useState<Date | undefined>(dateTime)
+    const [time, setTime] = useState(
         dateTime
             ? `${dateTime.getHours().toString().padStart(2, '0')}:${dateTime
                   .getMinutes()
@@ -34,7 +33,7 @@ export function DateTimePicker({ dateTime, onChange }: DateTimePickerProps) {
     )
 
     // Update internal state when props change
-    React.useEffect(() => {
+    useEffect(() => {
         setDate(dateTime)
         if (dateTime) {
             setTime(
@@ -76,48 +75,34 @@ export function DateTimePicker({ dateTime, onChange }: DateTimePickerProps) {
     }
 
     return (
-        <div className="flex gap-4">
-            <div className="flex flex-col gap-3">
-                <Label htmlFor="date-picker" className="px-1">
-                    Date
-                </Label>
-                <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant="outline"
-                            id="date-picker"
-                            className="w-32 justify-between font-normal"
-                        >
-                            {date ? date.toLocaleDateString() : 'Select date'}
-                            <ChevronDownIcon />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                        className="w-auto overflow-hidden p-0"
-                        align="start"
+        <div className="flex items-center gap-2 h-full">
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        className="h-full w-[110px] justify-between font-normal text-sm"
                     >
-                        <Calendar
-                            mode="single"
-                            selected={date}
-                            captionLayout="dropdown"
-                            onSelect={handleDateChange}
-                        />
-                    </PopoverContent>
-                </Popover>
-            </div>
-            <div className="flex flex-col gap-3">
-                <Label htmlFor="time-picker" className="px-1">
-                    Time
-                </Label>
-                <Input
-                    type="time"
-                    id="time-picker"
-                    step="1"
-                    value={time}
-                    onChange={handleTimeChange}
-                    className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                />
-            </div>
+                        {date ? date.toLocaleDateString() : 'Select date'}
+                        <ChevronDownIcon className="h-4 w-4 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        mode="single"
+                        selected={date}
+                        captionLayout="dropdown"
+                        onSelect={handleDateChange}
+                    />
+                </PopoverContent>
+            </Popover>
+
+            <Input
+                type="time"
+                step="1"
+                value={time}
+                onChange={handleTimeChange}
+                className="h-full w-[90px] text-sm bg-background [&::-webkit-calendar-picker-indicator]:hidden"
+            />
         </div>
     )
 }

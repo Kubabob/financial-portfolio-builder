@@ -1,16 +1,18 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+// import { useParams } from 'next/navigation'
 import LinePlot from '@/components/ui/chart'
 import { DateTimePicker } from '@/components/dateTimePicker'
 import { formatDateForApi } from '@/lib/utils'
 
 export default function FinancesTicker() {
-    const params = useParams()
-    const ticker = (params.ticker as string) || 'AAPL'
+    // const params = useParams()
+    // const ticker = (params.ticker as string) || 'AAPL'
 
+    const [ticker, setTicker] = useState<string>('AAPL')
     const [data, setData] = useState<Record<string, unknown>[]>([])
     const [loading, setLoading] = useState(true)
     const [endDate, setEndDate] = useState<Date>(
@@ -45,33 +47,54 @@ export default function FinancesTicker() {
 
     useEffect(() => {
         fetchData(ticker, startDate, endDate)
-    }, [ticker])
-
-    const handleFetchData = () => {
-        fetchData(ticker, startDate, endDate)
-    }
+    }, [ticker, startDate, endDate])
 
     return (
         <>
             <h1 className="text-2xl font-bold mb-4 text-center">
                 Financial Data for {ticker}
             </h1>
-            <div className="flex justify-center items-center gap-4">
-                <div className="flex flex-col items-center">
-                    <label className="mb-1 text-xl font-bold">start</label>
-                    <DateTimePicker
-                        dateTime={startDate}
-                        onChange={setStartDate}
-                    />
+            <div className="flex justify-center items-start gap-6 mt-6">
+                <div className="flex flex-col">
+                    <label className="mb-2 text-sm font-medium h-5 flex items-center">
+                        Ticker
+                    </label>
+                    <div className="h-10 flex items-center">
+                        <Input
+                            type="text"
+                            value={ticker}
+                            onChange={(e) => {
+                                setTicker(e.target.value)
+                                // handleFetchData
+                            }}
+                            className="h-full w-32"
+                        />
+                    </div>
                 </div>
-                <div className="flex flex-col items-center">
-                    <label className="mb-1 text-xl font-bold">end</label>
-                    <DateTimePicker dateTime={endDate} onChange={setEndDate} />
-                </div>
-            </div>
 
-            <div className="mt-4 flex justify-center">
-                <Button onClick={handleFetchData}>Fetch Data</Button>
+                <div className="flex flex-col">
+                    <label className="mb-2 text-sm font-medium h-5 flex items-center">
+                        Start Date
+                    </label>
+                    <div className="h-10">
+                        <DateTimePicker
+                            dateTime={startDate}
+                            onChange={setStartDate}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex flex-col">
+                    <label className="mb-2 text-sm font-medium h-5 flex items-center">
+                        End Date
+                    </label>
+                    <div className="h-10">
+                        <DateTimePicker
+                            dateTime={endDate}
+                            onChange={setEndDate}
+                        />
+                    </div>
+                </div>
             </div>
 
             {loading ? (
