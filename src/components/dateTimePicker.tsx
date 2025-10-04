@@ -13,9 +13,67 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover'
 
-export function DateTimePicker() {
+type DateTimePickerProps = {
+    dateTime?: Date
+    onChange?: (date: Date) => void
+}
+
+export function DateTimePicker({ dateTime, onChange }: DateTimePickerProps) {
     const [open, setOpen] = React.useState(false)
-    const [date, setDate] = React.useState<Date | undefined>(undefined)
+    const [date, setDate] = React.useState<Date | undefined>(dateTime)
+    const [time, setTime] = React.useState(
+        dateTime
+            ? `${dateTime.getHours().toString().padStart(2, '0')}:${dateTime
+                  .getMinutes()
+                  .toString()
+                  .padStart(2, '0')}:${dateTime
+                  .getSeconds()
+                  .toString()
+                  .padStart(2, '0')}`
+            : '00:00:00'
+    )
+
+    // Update internal state when props change
+    React.useEffect(() => {
+        setDate(dateTime)
+        if (dateTime) {
+            setTime(
+                `${dateTime.getHours().toString().padStart(2, '0')}:${dateTime
+                    .getMinutes()
+                    .toString()
+                    .padStart(2, '0')}:${dateTime
+                    .getSeconds()
+                    .toString()
+                    .padStart(2, '0')}`
+            )
+        }
+    }, [dateTime])
+
+    const handleDateChange = (newDate: Date | undefined) => {
+        if (!newDate) return
+
+        setDate(newDate)
+        setOpen(false)
+
+        if (onChange && time) {
+            const [hours, minutes, seconds] = time.split(':').map(Number)
+            const updatedDate = new Date(newDate)
+            updatedDate.setHours(hours, minutes, seconds)
+            onChange(updatedDate)
+        }
+    }
+
+    const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newTime = e.target.value
+        setTime(newTime)
+
+        if (onChange && date && newTime) {
+            const [hours, minutes, seconds] = newTime.split(':').map(Number)
+            const updatedDate = new Date(date)
+            updatedDate.setHours(hours, minutes, seconds)
+            onChange(updatedDate)
+        }
+    }
 
     return (
         <div className="flex gap-4">
@@ -42,10 +100,7 @@ export function DateTimePicker() {
                             mode="single"
                             selected={date}
                             captionLayout="dropdown"
-                            onSelect={(date) => {
-                                setDate(date)
-                                setOpen(false)
-                            }}
+                            onSelect={handleDateChange}
                         />
                     </PopoverContent>
                 </Popover>
@@ -58,7 +113,8 @@ export function DateTimePicker() {
                     type="time"
                     id="time-picker"
                     step="1"
-                    defaultValue="00:00:00"
+                    value={time}
+                    onChange={handleTimeChange}
                     className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                 />
             </div>
