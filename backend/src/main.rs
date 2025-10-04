@@ -1,14 +1,9 @@
 mod routes;
 mod services;
 
-use axum::{
-    Json, Router,
-    http::{StatusCode, header::ACCESS_CONTROL_ALLOW_ORIGIN},
-    routing::{get, post},
-};
-use serde::{Deserialize, Serialize};
+use axum::{Router, routing::get};
 
-use http::{Method, Request, Response, header};
+use http::Method;
 use tower_http::cors::{Any, CorsLayer};
 
 use tracing_subscriber;
