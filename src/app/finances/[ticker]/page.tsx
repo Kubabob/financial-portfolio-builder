@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import LinePlot from '@/components/ui/chart'
 import { DateTimePicker } from '@/components/dateTimePicker'
+import { formatDateForApi } from '@/lib/utils'
 
 export default function FinancesTicker() {
     const params = useParams()
@@ -24,10 +25,6 @@ export default function FinancesTicker() {
             return d
         }
     )
-
-    const formatDateForApi = (date: Date): string => {
-        return date.toISOString()
-    }
 
     const fetchData = async (ticker: string, start: Date, end: Date) => {
         setLoading(true)

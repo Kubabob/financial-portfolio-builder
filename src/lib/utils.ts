@@ -15,3 +15,7 @@ export function randomRGBColor() {
 export function backgroundRGBColor(RGBColor: string) {
     return RGBColor.replace('rgb', 'rgba').replace(')', ', 0.5)')
 }
+
+export const formatDateForApi = (date: Date): string => {
+    return date.toISOString()
+}
