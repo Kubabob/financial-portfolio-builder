@@ -3,10 +3,12 @@ mod services;
 
 use axum::{
     Json, Router,
-    http::{Method, StatusCode, header},
+    http::{StatusCode, header::ACCESS_CONTROL_ALLOW_ORIGIN},
     routing::{get, post},
 };
 use serde::{Deserialize, Serialize};
+
+use http::{Method, Request, Response, header};
 use tower_http::cors::{Any, CorsLayer};
 
 use tracing_subscriber;
@@ -18,7 +20,6 @@ async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    // Configure CORS
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods([Method::GET, Method::POST])

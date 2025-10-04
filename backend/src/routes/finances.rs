@@ -1,12 +1,8 @@
 use axum::{
-    Router,
-    extract::{Path, Query, State},
-    http::{Error, StatusCode},
+    extract::{Path, Query},
+    http::StatusCode,
     response::Json,
-    routing::get,
 };
-use serde::Deserialize;
-use serde::Serialize;
 use yahoo_finance_api::Quote;
 
 use super::super::services::finances::get_quotes;
@@ -47,7 +43,5 @@ pub async fn get_quotes_for_ticker(
         .await
         .expect("Failed to get quotes");
 
-    let response: Vec<QuoteResponse> = quotes.into_iter().map(QuoteResponse::from).collect();
-
-    (StatusCode::OK, Json(response))
+    (StatusCode::OK, Json(quotes))
 }
