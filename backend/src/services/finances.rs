@@ -1,9 +1,7 @@
 use std::error::Error;
 
-// use axum::Json;
-// use json::JsonValue;
+use crate::cache::{DF_CACHE, QUOTE_CACHE};
 use polars::prelude::*;
-// use shared::models::Candle;
 use time::OffsetDateTime;
 use yahoo_finance_api::{self as yahoo, Quote, YahooError};
 
@@ -14,12 +12,27 @@ pub async fn get_quotes(ticker: &str, start: &str, end: &str) -> Result<Vec<Quot
         .expect("failed to parse start datetime");
     let end = OffsetDateTime::parse(end, &time::format_description::well_known::Rfc3339)
         .expect("failed to parse end datetime");
+
+    // Check cache first
+    if let Some(cached) = QUOTE_CACHE.get(&format!("{}-{}-{}", ticker, start, end)) {
+        println!("Cache hit for {}", &format!("{}-{}-{}", ticker, start, end));
+        return Ok(cached);
+    }
+
+    println!(
+        "Cache miss for {}, fetching from API",
+        &format!("{}-{}-{}", ticker, start, end)
+    );
+
     // returns historic quotes with daily interval
     let resp = provider
         .get_quote_history(ticker, start, end)
         .await
         .unwrap();
-    let quotes = resp.quotes().expect("Failed to retrieve quotes");
+    let quotes = resp.quotes()?;
+
+    QUOTE_CACHE.insert(format!("{}-{}-{}", ticker, start, end), quotes.clone());
+
     Ok(quotes)
 }
 
@@ -34,6 +47,19 @@ pub async fn get_quotes_polars(
         .expect("failed to parse start datetime");
     let end = OffsetDateTime::parse(end, &time::format_description::well_known::Rfc3339)
         .expect("failed to parse end datetime");
+
+    // Check cache first
+    if let Some(cached) = DF_CACHE.get(&format!("{}-{}-{}", ticker, start, end)) {
+        // if let Some(cached) = DF_CACHE.get(ticker) {
+        println!("Cache hit for {}", &format!("{}-{}-{}", ticker, start, end));
+        return Ok(cached);
+    }
+
+    println!(
+        "Cache miss for {}, fetching from API",
+        &format!("{}-{}-{}", ticker, start, end)
+    );
+
     // returns historic quotes with daily interval
     let resp = provider
         .get_quote_history(ticker, start, end)
@@ -53,5 +79,9 @@ pub async fn get_quotes_polars(
         "volume" => quotes.iter().map(|q| q.volume).collect::<Vec<_>>(),
         "adjclose" => quotes.iter().map(|q| q.adjclose).collect::<Vec<_>>(),
     ]?;
+
+    DF_CACHE.insert(format!("{}-{}-{}", ticker, start, end), df.clone());
+    // DF_CACHE.insert(ticker.to_string(), df.clone());
+
     Ok(df)
 }
