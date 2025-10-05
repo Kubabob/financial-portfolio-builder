@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
 ts-rs = "11.0.1"
+yahoo_finance_api = "4.1.0"
