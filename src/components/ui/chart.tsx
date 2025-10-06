@@ -9,7 +9,6 @@ import {
     Title,
     Tooltip,
     Legend,
-    ChartOptions,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 
@@ -28,15 +27,7 @@ type LinePlotProps = {
     marginLeft?: number;
 };
 
-export default function LinePlot({
-    data,
-    width = 640,
-    height = 400,
-    marginTop = 20,
-    marginRight = 20,
-    marginBottom = 20,
-    marginLeft = 20,
-}: LinePlotProps): React.ReactElement {
+export default function LinePlot({ data }: LinePlotProps): React.ReactElement {
     type Row = { timestamp: number | string; [key: string]: unknown };
 
     const labels = (data as Row[]).map((row) =>

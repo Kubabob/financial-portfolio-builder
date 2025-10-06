@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
-use yahoo_finance_api::{self as yahoo, Quote, YahooError};
+use yahoo_finance_api::Quote;
 
 #[derive(Deserialize, TS)]
 #[ts(export)]
