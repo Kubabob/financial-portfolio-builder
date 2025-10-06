@@ -1,5 +1,6 @@
 use json::JsonValue::Null;
 use polars::prelude::*;
+use time::OffsetDateTime;
 
 pub fn normalize_column_by_first(column: Series) -> PolarsResult<Series> {
     Ok(&column
@@ -9,13 +10,6 @@ pub fn normalize_column_by_first(column: Series) -> PolarsResult<Series> {
             .try_extract::<f64>()
             .expect("Could not extract to f64")
         * 100)
-}
-
-pub fn check_missing_values(column: Series) -> Option<Series> {
-    if column.iter().any(|val| val.is_nan()) {
-        return Some(column.iter().map(|val| val.is_nan()).collect::<Series>());
-    }
-    None
 }
 
 pub fn missing_percentage(column: Series) -> f64 {
@@ -34,3 +28,18 @@ pub fn missing_percentage(column: Series) -> f64 {
         missing_count / total
     }
 }
+
+pub fn check_missing_values(column: Series) -> (Option<Series>, f64) {
+    if column.iter().any(|val| val.is_nan()) {
+        let missing_values = column.iter().map(|val| val.is_nan()).collect::<Series>();
+        return (
+            Some(missing_values.clone()),
+            missing_percentage(missing_values),
+        );
+    }
+    (None, 0.)
+}
+
+// pub fn date_completness(column: Series, start: &OffsetDateTime, end: &OffsetDateTime) -> f64 {
+
+// }
