@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
     Chart as ChartJS,
@@ -10,22 +10,23 @@ import {
     Tooltip,
     Legend,
     ChartOptions,
-} from 'chart.js'
-import { Line } from 'react-chartjs-2'
+} from "chart.js";
+import { Line } from "react-chartjs-2";
 
-import { randomRGBColor, backgroundRGBColor } from '@/lib/utils'
+import { backgroundRGBColor } from "@/lib/utils";
+import { PASTEL_COLORS } from "@/lib/statics";
 
-import { useEffect } from 'react'
+import { useEffect } from "react";
 
 type LinePlotProps = {
-    data: Array<Record<string, unknown>>
-    width?: number
-    height?: number
-    marginTop?: number
-    marginRight?: number
-    marginBottom?: number
-    marginLeft?: number
-}
+    data: Array<Record<string, unknown>>;
+    width?: number;
+    height?: number;
+    marginTop?: number;
+    marginRight?: number;
+    marginBottom?: number;
+    marginLeft?: number;
+};
 
 export default function LinePlot({
     data,
@@ -36,25 +37,25 @@ export default function LinePlot({
     marginBottom = 20,
     marginLeft = 20,
 }: LinePlotProps): React.ReactElement {
-    type Row = { timestamp: number | string; [key: string]: unknown }
+    type Row = { timestamp: number | string; [key: string]: unknown };
 
     const labels = (data as Row[]).map((row) =>
         new Date(
-            Number.parseInt(String(row.timestamp), 10) * 1000
-        ).toISOString()
-    )
+            Number.parseInt(String(row.timestamp), 10) * 1000,
+        ).toISOString(),
+    );
 
     const datasetsLabels =
-        data[0] && typeof data[0] === 'object' ? Object.keys(data[0]) : []
+        data[0] && typeof data[0] === "object" ? Object.keys(data[0]) : [];
     const options = {
         responsive: true,
         plugins: {
             legend: {
-                position: 'top' as const,
+                position: "top" as const,
             },
             title: {
                 display: true,
-                text: 'Chart.js Line Chart',
+                text: "Chart.js Line Chart",
             },
             zoom: {
                 zoom: {
@@ -67,29 +68,29 @@ export default function LinePlot({
                     drag: {
                         enabled: true,
                     },
-                    mode: 'x' as const,
+                    mode: "x" as const,
                 },
             },
             tooltip: {
-                mode: 'index' as const,
+                mode: "index" as const,
                 intersect: false,
-                position: 'nearest' as const,
+                position: "nearest" as const,
             },
             interaction: {
-                mode: 'index',
+                mode: "index",
                 intersect: false,
-                position: 'nearest',
+                position: "nearest",
             },
         },
-    }
+    };
     // }
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            import('chartjs-plugin-zoom').then((plugin) => {
-                ChartJS.register(plugin.default)
-            })
+        if (typeof window !== "undefined") {
+            import("chartjs-plugin-zoom").then((plugin) => {
+                ChartJS.register(plugin.default);
+            });
         }
-    }, [])
+    }, []);
     ChartJS.register(
         CategoryScale,
         LinearScale,
@@ -97,26 +98,23 @@ export default function LinePlot({
         LineElement,
         Title,
         Tooltip,
-        Legend
-    )
+        Legend,
+    );
 
     const chartData = {
         labels,
         datasets: datasetsLabels
-            .filter((label) => !['timestamp'].includes(label))
-            .map((label) => {
-                const borderColor = randomRGBColor()
-                const backgroundColor = backgroundRGBColor(borderColor)
-
+            .filter((label) => !["timestamp"].includes(label))
+            .map((label, index) => {
                 return {
                     label: label,
                     data: data.map((row) => {
-                        return row[label]
+                        return row[label];
                     }),
-                    borderColor: borderColor,
-                    backgroundColor: backgroundColor,
-                }
+                    borderColor: PASTEL_COLORS[index],
+                    backgroundColor: backgroundRGBColor(PASTEL_COLORS[index]),
+                };
             }),
-    }
-    return <Line options={options} data={chartData} />
+    };
+    return <Line options={options} data={chartData} />;
 }
