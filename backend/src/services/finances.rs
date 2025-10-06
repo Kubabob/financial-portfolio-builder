@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, time::Instant};
 
 use crate::cache::{DF_CACHE, QUOTE_CACHE};
 use polars::prelude::*;
@@ -6,16 +6,17 @@ use time::OffsetDateTime;
 use yahoo_finance_api::{self as yahoo, Quote, YahooError};
 
 pub async fn get_quotes(ticker: &str, start: &str, end: &str) -> Result<Vec<Quote>, YahooError> {
-    let provider = yahoo::YahooConnector::new().unwrap();
     // parse RFC3339 strings like "2020-01-01T00:00:00Z"
     let start = OffsetDateTime::parse(start, &time::format_description::well_known::Rfc3339)
         .expect("failed to parse start datetime");
     let end = OffsetDateTime::parse(end, &time::format_description::well_known::Rfc3339)
         .expect("failed to parse end datetime");
 
+    let start_time = Instant::now();
     // Check cache first
     if let Some(cached) = QUOTE_CACHE.get(&format!("{}-{}-{}", ticker, start, end)) {
         println!("Cache hit for {}", &format!("{}-{}-{}", ticker, start, end));
+        println!("Cached took: {:?}", start_time.elapsed());
         return Ok(cached);
     }
 
@@ -23,6 +24,8 @@ pub async fn get_quotes(ticker: &str, start: &str, end: &str) -> Result<Vec<Quot
         "Cache miss for {}, fetching from API",
         &format!("{}-{}-{}", ticker, start, end)
     );
+
+    let provider = yahoo::YahooConnector::new().unwrap();
 
     // returns historic quotes with daily interval
     let resp = provider
@@ -33,6 +36,7 @@ pub async fn get_quotes(ticker: &str, start: &str, end: &str) -> Result<Vec<Quot
 
     QUOTE_CACHE.insert(format!("{}-{}-{}", ticker, start, end), quotes.clone());
 
+    println!("Not cached took: {:?}", start_time.elapsed());
     Ok(quotes)
 }
 
@@ -41,7 +45,6 @@ pub async fn get_quotes_polars(
     start: &str,
     end: &str,
 ) -> Result<DataFrame, Box<dyn Error>> {
-    let provider = yahoo::YahooConnector::new().unwrap();
     // parse RFC3339 strings like "2020-01-01T00:00:00Z"
     let start = OffsetDateTime::parse(start, &time::format_description::well_known::Rfc3339)
         .expect("failed to parse start datetime");
@@ -59,6 +62,8 @@ pub async fn get_quotes_polars(
         "Cache miss for {}, fetching from API",
         &format!("{}-{}-{}", ticker, start, end)
     );
+
+    let provider = yahoo::YahooConnector::new().unwrap();
 
     // returns historic quotes with daily interval
     let resp = provider

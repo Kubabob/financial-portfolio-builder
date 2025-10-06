@@ -1,44 +1,55 @@
-'use client'
+"use client";
 
-import { Input } from '@/components/ui/input'
-import { useEffect, useState } from 'react'
-import LinePlot from '@/components/ui/chart'
-import { DateTimePicker } from '@/components/dateTimePicker'
-import { formatDateForApi } from '@/lib/utils'
+import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import LinePlot from "@/components/ui/chart";
+import { DateTimePicker } from "@/components/dateTimePicker";
+import { formatDateForApi } from "@/lib/utils";
 
 export default function Finances() {
-    const [ticker, setTicker] = useState<string>('')
-    const [data, setData] = useState<Record<string, unknown>[]>([])
-    const [loading, setLoading] = useState(true)
-    const [endDate, setEndDate] = useState<Date>(new Date())
+    const [ticker, setTicker] = useState<string>("");
+    const [debouncedTicker, setDebouncedTicker] = useState<string>("");
+    const [data, setData] = useState<Record<string, unknown>[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [endDate, setEndDate] = useState<Date>(new Date());
     const [startDate, setStartDate] = useState<Date>(() => {
-        const d = new Date()
-        d.setMonth(d.getMonth() - 1)
-        return d
-    })
+        const d = new Date();
+        d.setMonth(d.getMonth() - 1);
+        return d;
+    });
 
     const fetchData = async (ticker: string, start: Date, end: Date) => {
         if (ticker) {
-            setLoading(true)
+            setLoading(true);
             try {
                 const response = await fetch(
                     `http://localhost:3000/api/v1/finances/${ticker}?start=${formatDateForApi(
-                        start
-                    )}&end=${formatDateForApi(end)}`
-                )
-                const result = await response.json()
-                setData(result)
+                        start,
+                    )}&end=${formatDateForApi(end)}`,
+                );
+                const result = await response.json();
+                setData(result);
             } catch (error) {
-                console.error('Error fetching data:', error)
+                console.error("Error fetching data:", error);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
         }
-    }
+    };
 
+    // Debounce the ticker input
     useEffect(() => {
-        fetchData(ticker, startDate, endDate)
-    }, [ticker, startDate, endDate])
+        const timeoutId = setTimeout(() => {
+            setDebouncedTicker(ticker);
+        }, 500); // 500ms delay
+
+        return () => clearTimeout(timeoutId);
+    }, [ticker]);
+
+    // Fetch data when debounced ticker or dates change
+    useEffect(() => {
+        fetchData(debouncedTicker, startDate, endDate);
+    }, [debouncedTicker, startDate, endDate]);
 
     return (
         <>
@@ -55,7 +66,7 @@ export default function Finances() {
                             type="text"
                             value={ticker}
                             onChange={(e) => {
-                                setTicker(e.target.value)
+                                setTicker(e.target.value);
                             }}
                             className="h-full w-32"
                         />
@@ -103,5 +114,5 @@ export default function Finances() {
                 </div>
             )}
         </>
-    )
+    );
 }
