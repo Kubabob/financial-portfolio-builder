@@ -2,6 +2,7 @@ mod cache;
 mod calculations;
 mod routes;
 mod services;
+mod utils;
 
 use axum::{Router, routing::get};
 
