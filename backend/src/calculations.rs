@@ -12,16 +12,33 @@ pub fn normalize_column_by_first(column: Series) -> PolarsResult<Series> {
         * 100)
 }
 
-fn missing_percentage(column: Series) -> f64 {
-    let missing_count = column
+fn missing_count(series: &Series) -> u32 {
+    series
         .cast(&DataType::UInt32)
         .unwrap()
         .u32()
         .unwrap()
         .sum()
-        .unwrap_or(0) as f64;
+        .unwrap_or(0)
+}
 
-    let total = column.len() as f64;
+fn missing_count_as_series(series: &Series) -> Series {
+    Series::new(
+        format!("Missing count {:?}", series.name().clone()).into(),
+        [series
+            .cast(&DataType::UInt32)
+            .unwrap()
+            .u32()
+            .unwrap()
+            .sum()
+            .unwrap()],
+    )
+}
+
+fn missing_percentage(series: &Series) -> f64 {
+    let missing_count = missing_count(series) as f64;
+
+    let total = series.len() as f64;
     if total == 0.0 {
         0.0
     } else {
@@ -40,7 +57,7 @@ fn missing_percentage(column: Series) -> f64 {
 //     (None, 0.)
 // }
 
-pub fn check_missing_values(column: &Column) -> Column {
+pub fn missing_values_column(column: &Column) -> Column {
     let missing_values = column
         .as_series()
         .unwrap()
@@ -50,6 +67,19 @@ pub fn check_missing_values(column: &Column) -> Column {
 
     missing_values.into_column()
 }
+
+pub fn missing_values_df(df: &DataFrame) -> DataFrame {
+    df.iter()
+        .map(|series| series.is_nan().unwrap().into_series())
+        .collect::<DataFrame>()
+}
+
+pub fn missing_values_count(df: &DataFrame) -> DataFrame {
+    df.iter()
+        .map(|series| missing_count_as_series(series))
+        .collect()
+}
+
 // pub fn date_completness(column: Series, start: &OffsetDateTime, end: &OffsetDateTime) -> f64 {
 
 // }

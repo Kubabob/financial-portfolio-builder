@@ -13,6 +13,8 @@ use tracing_subscriber;
 
 use routes::quotes::{get_quotes, get_quotes_df};
 
+use crate::routes::stats::{missing_values, missing_values_count};
+
 #[tokio::main]
 async fn main() {
     // initialize tracing
@@ -30,6 +32,14 @@ async fn main() {
         .route("/", get(root))
         .route("/api/finances/quotes/{ticker}", get(get_quotes))
         .route("/api/finances/dataframes/{ticker}", get(get_quotes_df))
+        .route(
+            "/api/finances/dataframes/missing_values/{ticker}",
+            get(missing_values),
+        )
+        .route(
+            "/api/finances/dataframes/missing_values/count/{ticker}",
+            get(missing_values_count),
+        )
         .layer(cors);
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

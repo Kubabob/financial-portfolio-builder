@@ -1,4 +1,4 @@
-use crate::calculations::check_missing_values;
+use crate::calculations::missing_values_column;
 use polars::frame::DataFrame;
 
 pub fn missing_values(df: DataFrame) -> String {
@@ -8,7 +8,7 @@ pub fn missing_values(df: DataFrame) -> String {
     // }
     let df: DataFrame = df
         .column_iter()
-        .map(|column| check_missing_values(column))
+        .map(|column| missing_values_column(column))
         .collect();
 
     df.to_string()

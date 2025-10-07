@@ -29,6 +29,5 @@ pub async fn get_quotes_df(
         .await
         .expect("Failed to get quotes");
 
-    println!("{:?}", quotes);
     (StatusCode::OK, quotes.to_string())
 }
