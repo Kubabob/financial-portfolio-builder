@@ -1,9 +1,17 @@
+use polars::df;
+use polars::error::PolarsError;
+use polars::frame::DataFrame;
 use polars::{prelude::NamedFrom, series::Series};
+use time::Duration;
 use time::OffsetDateTime;
 use time::parsing::Parsable;
+use yahoo_finance_api::Quote;
 
-pub fn generate_business_days<T>(start: &str, end: &str, format: &impl Parsable) -> Series {
-    use time::Duration;
+pub fn generate_business_days<T>(
+    start: &str,
+    end: &str,
+    format: &impl Parsable,
+) -> Result<Series, PolarsError> {
     let start_dt = OffsetDateTime::parse(start, format).unwrap();
     let end_dt = OffsetDateTime::parse(end, format).unwrap();
     let mut days_ts: Vec<i64> = Vec::new();
@@ -16,5 +24,17 @@ pub fn generate_business_days<T>(start: &str, end: &str, format: &impl Parsable)
         }
         current = current + Duration::days(1);
     }
-    Series::new("Business days".into(), days_ts)
+    Ok(Series::new("Business days".into(), days_ts))
+}
+
+pub fn df_from_quotes(quotes: &Vec<Quote>) -> Result<DataFrame, PolarsError> {
+    df![
+        "date" => quotes.iter().map(|q| q.timestamp).collect::<Vec<_>>(),
+        "open" => quotes.iter().map(|q| q.open).collect::<Vec<_>>(),
+        "high" => quotes.iter().map(|q| q.high).collect::<Vec<_>>(),
+        "low" => quotes.iter().map(|q| q.low).collect::<Vec<_>>(),
+        "close" => quotes.iter().map(|q| q.close).collect::<Vec<_>>(),
+        "volume" => quotes.iter().map(|q| q.volume).collect::<Vec<_>>(),
+        "adjclose" => quotes.iter().map(|q| q.adjclose).collect::<Vec<_>>(),
+    ]
 }

@@ -1,6 +1,9 @@
 use std::{error::Error, time::Instant};
 
-use crate::cache::{DF_CACHE, QUOTE_CACHE};
+use crate::{
+    cache::{DF_CACHE, QUOTE_CACHE},
+    utils::df_from_quotes,
+};
 use polars::prelude::*;
 use time::OffsetDateTime;
 use yahoo_finance_api::{self as yahoo, Quote, YahooError};
@@ -20,7 +23,6 @@ pub async fn get_quotes_service(
     // Check cache first
     if let Some(cached) = QUOTE_CACHE.get(&format!("{}-{}-{}", ticker, start, end)) {
         println!("Cache hit for {}", &format!("{}-{}-{}", ticker, start, end));
-        println!("Cached took: {:?}", start_time.elapsed());
         return Ok(cached);
     }
 
@@ -67,30 +69,16 @@ pub async fn get_quotes_polars(
         &format!("{}-{}-{}", ticker, start, end)
     );
 
-    let provider = yahoo::YahooConnector::new().unwrap();
+    let provider = yahoo::YahooConnector::new()?;
 
     // returns historic quotes with daily interval
-    let resp = provider
-        .get_quote_history(ticker, start, end)
-        .await
-        .unwrap();
+    let resp = provider.get_quote_history(ticker, start, end).await?;
 
     let quotes = resp.quotes()?;
 
-    let dates: Vec<i64> = quotes.iter().map(|q| q.timestamp).collect();
-
-    let df = df![
-        "date" => dates,
-        "open" => quotes.iter().map(|q| q.open).collect::<Vec<_>>(),
-        "high" => quotes.iter().map(|q| q.high).collect::<Vec<_>>(),
-        "low" => quotes.iter().map(|q| q.low).collect::<Vec<_>>(),
-        "close" => quotes.iter().map(|q| q.close).collect::<Vec<_>>(),
-        "volume" => quotes.iter().map(|q| q.volume).collect::<Vec<_>>(),
-        "adjclose" => quotes.iter().map(|q| q.adjclose).collect::<Vec<_>>(),
-    ]?;
+    let df = df_from_quotes(&quotes)?;
 
     DF_CACHE.insert(format!("{}-{}-{}", ticker, start, end), df.clone());
-    // DF_CACHE.insert(ticker.to_string(), df.clone());
 
     Ok(df)
 }
