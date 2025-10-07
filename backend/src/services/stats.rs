@@ -34,6 +34,20 @@ pub fn missing_percentage(series: &Series) -> PolarsResult<f64> {
     })
 }
 
+pub fn missing_percentage_series(series: &Series) -> PolarsResult<Series> {
+    let missing_count = missing_count(series)? as f64;
+
+    let total = series.len() as f64;
+    Ok(Series::new(
+        format!("Missing percent {:?}", &series.name()).into(),
+        if total == 0.0 {
+            [0.0]
+        } else {
+            [missing_count / total]
+        },
+    ))
+}
+
 pub fn missing_values_column(column: &Column) -> PolarsResult<Column> {
     Ok(column
         .as_series()
@@ -59,5 +73,14 @@ pub fn missing_values_count(df: &DataFrame) -> PolarsResult<DataFrame> {
     Ok(df
         .iter()
         .map(|series| missing_count_as_series(series).expect("Could not count missings"))
+        .collect())
+}
+
+pub fn missing_values_percentage(df: &DataFrame) -> PolarsResult<DataFrame> {
+    Ok(df
+        .iter()
+        .map(|series| {
+            missing_percentage_series(&series).expect("Could not count percentage of missings")
+        })
         .collect())
 }
