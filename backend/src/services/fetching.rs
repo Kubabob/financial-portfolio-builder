@@ -19,17 +19,10 @@ pub async fn get_quotes_service(
     let end = OffsetDateTime::parse(end, &time::format_description::well_known::Rfc3339)
         .expect("failed to parse end datetime");
 
-    let start_time = Instant::now();
     // Check cache first
     if let Some(cached) = QUOTE_CACHE.get(&format!("{}-{}-{}", ticker, start, end)) {
-        println!("Cache hit for {}", &format!("{}-{}-{}", ticker, start, end));
         return Ok(cached);
     }
-
-    println!(
-        "Cache miss for {}, fetching from API",
-        &format!("{}-{}-{}", ticker, start, end)
-    );
 
     let provider = yahoo::YahooConnector::new().unwrap();
 
@@ -42,7 +35,6 @@ pub async fn get_quotes_service(
 
     QUOTE_CACHE.insert(format!("{}-{}-{}", ticker, start, end), quotes.clone());
 
-    println!("Not cached took: {:?}", start_time.elapsed());
     Ok(quotes)
 }
 
@@ -59,15 +51,8 @@ pub async fn get_quotes_polars(
 
     // Check cache first
     if let Some(cached) = DF_CACHE.get(&format!("{}-{}-{}", ticker, start, end)) {
-        // if let Some(cached) = DF_CACHE.get(ticker) {
-        println!("Cache hit for {}", &format!("{}-{}-{}", ticker, start, end));
         return Ok(cached);
     }
-
-    println!(
-        "Cache miss for {}, fetching from API",
-        &format!("{}-{}-{}", ticker, start, end)
-    );
 
     let provider = yahoo::YahooConnector::new()?;
 
