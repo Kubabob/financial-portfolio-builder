@@ -5,23 +5,23 @@ use axum::{
 };
 use yahoo_finance_api::Quote;
 
-use crate::services::finances::get_quotes_polars;
+use crate::services::fetching::get_quotes_polars;
 
-use super::super::services::finances::get_quotes;
+use super::super::services::fetching::get_quotes_service;
 use shared::models::QuoteQuery;
 
-pub async fn get_quotes_for_ticker_v1(
+pub async fn get_quotes(
     Path(ticker): Path<String>,
     Query(props): Query<QuoteQuery>,
 ) -> (StatusCode, Json<Vec<Quote>>) {
-    let quotes = get_quotes(&ticker, &props.start, &props.end)
+    let quotes = get_quotes_service(&ticker, &props.start, &props.end)
         .await
         .expect("Failed to get quotes");
 
     (StatusCode::OK, Json(quotes))
 }
 
-pub async fn get_quotes_for_ticker_v2(
+pub async fn get_quotes_df(
     Path(ticker): Path<String>,
     Query(props): Query<QuoteQuery>,
 ) -> (StatusCode, String) {

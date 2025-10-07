@@ -1,1 +1,2 @@
-pub mod finances;
+pub mod quotes;
+pub mod stats;

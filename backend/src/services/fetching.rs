@@ -5,7 +5,11 @@ use polars::prelude::*;
 use time::OffsetDateTime;
 use yahoo_finance_api::{self as yahoo, Quote, YahooError};
 
-pub async fn get_quotes(ticker: &str, start: &str, end: &str) -> Result<Vec<Quote>, YahooError> {
+pub async fn get_quotes_service(
+    ticker: &str,
+    start: &str,
+    end: &str,
+) -> Result<Vec<Quote>, YahooError> {
     // parse RFC3339 strings like "2020-01-01T00:00:00Z"
     let start = OffsetDateTime::parse(start, &time::format_description::well_known::Rfc3339)
         .expect("failed to parse start datetime");
