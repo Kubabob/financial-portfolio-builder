@@ -4,8 +4,10 @@ use axum::{
 };
 use shared::models::QuoteQuery;
 
-use crate::calculations::{missing_values_count as missing_values_count_calc, missing_values_df};
-use crate::services::fetching::get_quotes_polars;
+use crate::services::{
+    fetching::get_quotes_polars,
+    stats::{missing_values_count as missing_values_count_calc, missing_values_df},
+};
 
 pub async fn missing_values(
     Path(ticker): Path<String>,
@@ -17,7 +19,7 @@ pub async fn missing_values(
 
     let missing_values = missing_values_df(&quotes);
 
-    (StatusCode::OK, missing_values.to_string())
+    (StatusCode::OK, missing_values.unwrap().to_string())
 }
 
 pub async fn missing_values_count(
@@ -28,8 +30,8 @@ pub async fn missing_values_count(
         .await
         .expect("Failed to get quotes");
 
-    let missing_values = missing_values_df(&quotes);
+    let missing_values = missing_values_df(&quotes).unwrap();
 
     let missing_values_count = missing_values_count_calc(&missing_values);
-    (StatusCode::OK, missing_values_count.to_string())
+    (StatusCode::OK, missing_values_count.unwrap().to_string())
 }
