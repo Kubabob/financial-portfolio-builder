@@ -24,13 +24,10 @@ pub async fn get_quotes_service(
         return Ok(cached);
     }
 
-    let provider = yahoo::YahooConnector::new().unwrap();
+    let provider = yahoo::YahooConnector::new()?;
 
     // returns historic quotes with daily interval
-    let resp = provider
-        .get_quote_history(ticker, start, end)
-        .await
-        .unwrap();
+    let resp = provider.get_quote_history(ticker, start, end).await?;
     let quotes = resp.quotes()?;
 
     QUOTE_CACHE.insert(format!("{}-{}-{}", ticker, start, end), quotes.clone());
