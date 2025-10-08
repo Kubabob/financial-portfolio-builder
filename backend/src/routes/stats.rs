@@ -1,6 +1,8 @@
 use axum::{
+    Router,
     extract::{Path, Query},
     http::StatusCode,
+    routing::get,
 };
 use shared::models::QuoteQuery;
 
@@ -11,6 +13,19 @@ use crate::services::{
         missing_values_percentage as missing_values_percentage_calc,
     },
 };
+
+pub fn router() -> Router {
+    Router::new()
+        .route("/dataframes/missing_values/{ticker}", get(missing_values))
+        .route(
+            "/dataframes/missing_values/count/{ticker}",
+            get(missing_values_count),
+        )
+        .route(
+            "/dataframes/missing_values/percent/{ticker}",
+            get(missing_values_percent),
+        )
+}
 
 pub async fn missing_values(
     Path(ticker): Path<String>,

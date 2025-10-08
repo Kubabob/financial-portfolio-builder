@@ -30,19 +30,11 @@ async fn main() {
         // `GET /` goes to `root`
         .without_v07_checks()
         .route("/", get(root))
-        .route("/api/finances/quotes/{ticker}", get(get_quotes))
-        .route("/api/finances/dataframes/{ticker}", get(get_quotes_df))
-        .route(
-            "/api/finances/dataframes/missing_values/{ticker}",
-            get(missing_values),
-        )
-        .route(
-            "/api/finances/dataframes/missing_values/count/{ticker}",
-            get(missing_values_count),
-        )
-        .route(
-            "/api/finances/dataframes/missing_values/percent/{ticker}",
-            get(missing_values_percent),
+        .nest(
+            "/api/finances",
+            Router::new()
+                .merge(routes::quotes::router())
+                .merge(routes::stats::router()),
         )
         .layer(cors);
     // run our app with hyper, listening globally on port 3000
