@@ -11,7 +11,7 @@ use tower_http::cors::{Any, CorsLayer};
 
 use tracing_subscriber;
 
-use routes::quotes::{get_dataframe, get_quotes};
+use routes::quotes::get_dataframe;
 
 use crate::routes::stats::{missing_values, missing_values_count, missing_values_percent};
 
