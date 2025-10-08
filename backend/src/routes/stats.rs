@@ -31,7 +31,7 @@ pub async fn missing_values(
     Path(ticker): Path<String>,
     Query(props): Query<QuoteQuery>,
 ) -> (StatusCode, String) {
-    let quotes = get_dataframe_service(&ticker, &props.start, &props.end)
+    let quotes = get_dataframe_service(&ticker, &props)
         .await
         .expect("Failed to get quotes");
 
@@ -44,7 +44,7 @@ pub async fn missing_values_count(
     Path(ticker): Path<String>,
     Query(props): Query<QuoteQuery>,
 ) -> (StatusCode, String) {
-    let quotes = get_dataframe_service(&ticker, &props.start, &props.end)
+    let quotes = get_dataframe_service(&ticker, &props)
         .await
         .expect("Failed to get quotes");
 
@@ -58,7 +58,7 @@ pub async fn missing_values_percent(
     Path(ticker): Path<String>,
     Query(props): Query<QuoteQuery>,
 ) -> (StatusCode, String) {
-    let quotes = get_dataframe_service(&ticker, &props.start, &props.end)
+    let quotes = get_dataframe_service(&ticker, &props)
         .await
         .expect("Failed to get quotes");
 
