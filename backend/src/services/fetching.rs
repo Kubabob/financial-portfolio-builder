@@ -46,16 +46,30 @@ pub async fn get_dataframe_service(
     let end = OffsetDateTime::parse(&props.end, &time::format_description::well_known::Rfc3339)
         .expect("failed to parse end datetime");
 
+    // // Check cache first
+    // if props.columns.is_empty() {
+    //     if let Some(cached) = DF_CACHE.get(&format!("{}-{}-{}", ticker, start, end)) {
+    //         return Ok(cached);
+    //     }
+    // } else {
+    //     if let Some(cached) =
+    //         DF_CACHE.get(&format!("{}-{}-{}-{}", ticker, start, end, props.columns))
+    //     {
+    //         return Ok(cached);
+    //     }
+    // }
+
     // Check cache first
-    if props.columns.is_empty() {
-        if let Some(cached) = DF_CACHE.get(&format!("{}-{}-{}", ticker, start, end)) {
-            return Ok(cached);
+    match &props.columns {
+        None => {
+            if let Some(cached) = DF_CACHE.get(&format!("{}-{}-{}", ticker, start, end)) {
+                return Ok(cached);
+            }
         }
-    } else {
-        if let Some(cached) =
-            DF_CACHE.get(&format!("{}-{}-{}-{}", ticker, start, end, props.columns))
-        {
-            return Ok(cached);
+        Some(cols) => {
+            if let Some(cached) = DF_CACHE.get(&format!("{}-{}-{}-{}", ticker, start, end, cols)) {
+                return Ok(cached);
+            }
         }
     }
 
@@ -68,24 +82,42 @@ pub async fn get_dataframe_service(
 
     let df;
 
-    if props.columns.is_empty() {
-        df = df_from_quotes(&quotes, None)?;
+    // if props.columns.is_empty() {
+    //     df = df_from_quotes(&quotes, None)?;
 
-        DF_CACHE.insert(format!("{}-{}-{}", ticker, start, end), df.clone());
-    } else {
-        let columns_vec: Vec<String> = props
-            .columns
-            .split(',')
-            .map(|s| s.trim().to_owned())
-            .filter(|s| !s.is_empty())
-            .collect();
+    //     DF_CACHE.insert(format!("{}-{}-{}", ticker, start, end), df.clone());
+    // } else {
+    //     let columns_vec: Vec<String> = props
+    //         .columns
+    //         .split(',')
+    //         .map(|s| s.trim().to_owned())
+    //         .filter(|s| !s.is_empty())
+    //         .collect();
 
-        df = df_from_quotes(&quotes, Some(columns_vec))?;
+    //     df = df_from_quotes(&quotes, Some(columns_vec))?;
 
-        DF_CACHE.insert(
-            format!("{}-{}-{}-{}", ticker, start, end, props.columns),
-            df.clone(),
-        );
+    //     DF_CACHE.insert(
+    //         format!("{}-{}-{}-{}", ticker, start, end, props.columns),
+    //         df.clone(),
+    //     );
+    // }
+
+    match &props.columns {
+        None => {
+            df = df_from_quotes(&quotes, None)?;
+            DF_CACHE.insert(format!("{}-{}-{}", ticker, start, end), df.clone());
+        }
+        Some(cols) => {
+            let columns_vec: Vec<String> = cols
+                .split(',')
+                .map(|s| s.trim().to_owned())
+                .filter(|s| !s.is_empty())
+                .collect();
+
+            df = df_from_quotes(&quotes, Some(columns_vec))?;
+
+            DF_CACHE.insert(format!("{}-{}-{}-{}", ticker, start, end, cols), df.clone());
+        }
     }
 
     Ok(df)
