@@ -7,6 +7,7 @@ use yahoo_finance_api::Quote;
 pub struct QuoteQuery {
     pub start: String,
     pub end: String,
+    pub columns: String,
 }
 
 /// Struct for single quote(candle)

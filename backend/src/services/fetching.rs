@@ -35,7 +35,7 @@ pub async fn get_quotes_service(
     Ok(quotes)
 }
 
-pub async fn get_quotes_polars(
+pub async fn get_dataframe_service(
     ticker: &str,
     start: &str,
     end: &str,
@@ -58,7 +58,44 @@ pub async fn get_quotes_polars(
 
     let quotes = resp.quotes()?;
 
-    let df = df_from_quotes(&quotes)?;
+    let df = df_from_quotes(&quotes, None)?;
+
+    DF_CACHE.insert(format!("{}-{}-{}", ticker, start, end), df.clone());
+
+    Ok(df)
+}
+
+pub async fn get_dataframe_column_service(
+    ticker: &str,
+    start: &str,
+    end: &str,
+    columns: Option<Vec<String>>,
+) -> Result<DataFrame, Box<dyn Error>> {
+    // parse RFC3339 strings like "2020-01-01T00:00:00Z"
+    let start = OffsetDateTime::parse(start, &time::format_description::well_known::Rfc3339)
+        .expect("failed to parse start datetime");
+    let end = OffsetDateTime::parse(end, &time::format_description::well_known::Rfc3339)
+        .expect("failed to parse end datetime");
+
+    // Check cache first
+    if let Some(cached) = DF_CACHE.get(&format!(
+        "{}-{}-{}-{:?}",
+        ticker,
+        start,
+        end,
+        columns.clone().unwrap_or(Vec::from(["".into()]))
+    )) {
+        return Ok(cached);
+    }
+
+    let provider = yahoo::YahooConnector::new()?;
+
+    // returns historic quotes with daily interval
+    let resp = provider.get_quote_history(ticker, start, end).await?;
+
+    let quotes = resp.quotes()?;
+
+    let df = df_from_quotes(&quotes, columns)?;
 
     DF_CACHE.insert(format!("{}-{}-{}", ticker, start, end), df.clone());
 

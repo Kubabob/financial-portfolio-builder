@@ -7,7 +7,7 @@ use axum::{
 use shared::models::QuoteQuery;
 
 use crate::services::{
-    fetching::get_quotes_polars,
+    fetching::get_dataframe_service,
     stats::{
         missing_values_count as missing_values_count_calc, missing_values_df,
         missing_values_percentage as missing_values_percentage_calc,
@@ -31,7 +31,7 @@ pub async fn missing_values(
     Path(ticker): Path<String>,
     Query(props): Query<QuoteQuery>,
 ) -> (StatusCode, String) {
-    let quotes = get_quotes_polars(&ticker, &props.start, &props.end)
+    let quotes = get_dataframe_service(&ticker, &props.start, &props.end)
         .await
         .expect("Failed to get quotes");
 
@@ -44,7 +44,7 @@ pub async fn missing_values_count(
     Path(ticker): Path<String>,
     Query(props): Query<QuoteQuery>,
 ) -> (StatusCode, String) {
-    let quotes = get_quotes_polars(&ticker, &props.start, &props.end)
+    let quotes = get_dataframe_service(&ticker, &props.start, &props.end)
         .await
         .expect("Failed to get quotes");
 
@@ -58,7 +58,7 @@ pub async fn missing_values_percent(
     Path(ticker): Path<String>,
     Query(props): Query<QuoteQuery>,
 ) -> (StatusCode, String) {
-    let quotes = get_quotes_polars(&ticker, &props.start, &props.end)
+    let quotes = get_dataframe_service(&ticker, &props.start, &props.end)
         .await
         .expect("Failed to get quotes");
 
