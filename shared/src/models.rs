@@ -5,6 +5,7 @@ use yahoo_finance_api::Quote;
 #[derive(Deserialize, TS)]
 #[ts(export)]
 pub struct QuoteQuery {
+    pub tickers: String,
     pub start: String,
     pub end: String,
     pub columns: Option<String>,
