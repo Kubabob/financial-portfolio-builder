@@ -6,7 +6,7 @@ use polars::{prelude::NamedFrom, series::Series};
 use time::Duration;
 use time::OffsetDateTime;
 use time::parsing::Parsable;
-use yahoo_finance_api::Quote;
+use yahoo_finance_api::{Quote, YahooConnector};
 
 pub fn generate_business_days<T>(
     start: &str,
@@ -26,6 +26,28 @@ pub fn generate_business_days<T>(
         current = current + Duration::days(1);
     }
     Ok(Series::new("Business days".into(), days_ts))
+}
+
+pub async fn get_multiple_quotes_history(
+    provider: YahooConnector,
+    tickers: Vec<String>,
+    start: OffsetDateTime,
+    end: OffsetDateTime,
+) -> Result<Vec<Vec<Quote>>, Box<dyn std::error::Error>> {
+    // Call the async method sequentially for each ticker and propagate errors.
+    let mut responses = Vec::with_capacity(tickers.len());
+    for ticker in tickers.iter() {
+        let resp = provider.get_quote_history(ticker, start, end).await?;
+        responses.push(resp);
+    }
+
+    let mut quotes_all = Vec::with_capacity(responses.len());
+    for response in responses {
+        let quotes = response.quotes()?;
+        quotes_all.push(quotes);
+    }
+
+    Ok(quotes_all)
 }
 
 pub fn df_from_quotes(
