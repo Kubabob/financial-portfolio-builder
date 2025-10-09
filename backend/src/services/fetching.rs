@@ -1,6 +1,9 @@
 use std::error::Error;
 
-use crate::{cache::DF_CACHE, utils::df_from_quotes};
+use crate::{
+    cache::DF_CACHE,
+    utils::{combine_dfs, df_from_quotes, get_quotes_history},
+};
 use polars::prelude::*;
 use shared::models::QuoteQuery;
 use time::OffsetDateTime;
@@ -44,13 +47,10 @@ pub async fn get_dataframe_service(props: &QuoteQuery) -> Result<DataFrame, Box<
 
     let provider = yahoo::YahooConnector::new()?;
 
-    // returns historic quotes with daily interval
-    let resp = tickers.iter().map(|ticker| provider.get_quote_history(ticker, start, end).await)
+    // Fetch historic quotes for each ticker (await inside async function)
+    let quotes = get_quotes_history(provider, tickers.clone(), start, end, columns_filter).await?;
 
-    // let resp = provider.get_quote_history(ticker, start, end).await?;
-    let quotes = resp.quotes()?;
-
-    let df = df_from_quotes(&quotes, columns_filter)?;
+    let df = combine_dfs(quotes, tickers)?;
 
     DF_CACHE.insert(cache_key, df.clone());
 

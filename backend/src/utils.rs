@@ -1,7 +1,10 @@
 use polars::df;
 use polars::error::PolarsError;
 use polars::frame::DataFrame;
-use polars::prelude::{Column, IntoColumn};
+use polars::functions::concat_df_horizontal;
+use polars::prelude::{
+    Column, DataFrameJoinOps, DataType, IntoColumn, JoinArgs, JoinType, TimeUnit,
+};
 use polars::{prelude::NamedFrom, series::Series};
 use time::Duration;
 use time::OffsetDateTime;
@@ -28,12 +31,13 @@ pub fn generate_business_days<T>(
     Ok(Series::new("Business days".into(), days_ts))
 }
 
-pub async fn get_multiple_quotes_history(
+pub async fn get_quotes_history(
     provider: YahooConnector,
     tickers: Vec<String>,
     start: OffsetDateTime,
     end: OffsetDateTime,
-) -> Result<Vec<Vec<Quote>>, Box<dyn std::error::Error>> {
+    columns: Option<Vec<String>>,
+) -> Result<Vec<DataFrame>, Box<dyn std::error::Error>> {
     // Call the async method sequentially for each ticker and propagate errors.
     let mut responses = Vec::with_capacity(tickers.len());
     for ticker in tickers.iter() {
@@ -41,13 +45,51 @@ pub async fn get_multiple_quotes_history(
         responses.push(resp);
     }
 
-    let mut quotes_all = Vec::with_capacity(responses.len());
+    let mut dataframes = Vec::with_capacity(responses.len());
     for response in responses {
         let quotes = response.quotes()?;
-        quotes_all.push(quotes);
+        dataframes.push(df_from_quotes(&quotes, columns.clone())?);
     }
 
-    Ok(quotes_all)
+    Ok(dataframes)
+}
+
+pub fn combine_dfs(
+    dataframes: Vec<DataFrame>,
+    tickers: Vec<String>,
+) -> Result<DataFrame, PolarsError> {
+    if dataframes.is_empty() {
+        return Err(PolarsError::NoData("No dataframes to combine".into()));
+    }
+
+    let mut renamed_dfs = Vec::with_capacity(dataframes.len());
+
+    for (df, ticker) in dataframes.into_iter().zip(tickers.iter()) {
+        let mut renamed_df = df.clone();
+        for col in df.get_column_names() {
+            // Rename all columns including date with ticker prefix
+            renamed_df.rename(col, format!("{} {}", ticker, col).into())?;
+        }
+        renamed_dfs.push(renamed_df);
+    }
+
+    // Start with the first dataframe
+    let mut combined_df = renamed_dfs[0].clone();
+    let first_ticker = &tickers[0];
+
+    // Join all subsequent dataframes on their respective date columns
+    for (i, df) in renamed_dfs.iter().enumerate().skip(1) {
+        let ticker = &tickers[i];
+        combined_df = combined_df.join(
+            df,
+            &[format!("{} date", first_ticker)],
+            &[format!("{} date", ticker)],
+            JoinArgs::new(JoinType::Full),
+            None,
+        )?;
+    }
+
+    Ok(combined_df)
 }
 
 pub fn df_from_quotes(
@@ -58,13 +100,15 @@ pub fn df_from_quotes(
         let mut cols_series: Vec<Column> = Vec::with_capacity(columns.len());
         for col_name in columns.iter() {
             match col_name.as_str() {
-                "date" => cols_series.push(
-                    Series::new(
-                        "date".into(),
-                        quotes.iter().map(|q| q.timestamp).collect::<Vec<_>>(),
-                    )
-                    .into_column(),
-                ),
+                "date" => {
+                    // Convert Unix timestamp to datetime
+                    let timestamps: Vec<i64> = quotes.iter().map(|q| q.timestamp as i64).collect();
+
+                    let date_series = Series::new("date".into(), timestamps)
+                        .cast(&DataType::Datetime(TimeUnit::Milliseconds, None))?;
+
+                    cols_series.push(date_series.into_column());
+                }
                 "open" => cols_series.push(
                     Series::new(
                         "open".into(),
@@ -115,8 +159,14 @@ pub fn df_from_quotes(
         return DataFrame::new(cols_series);
     }
 
+    // Convert timestamps to datetime for the default case
+    let timestamps: Vec<i64> = quotes.iter().map(|q| q.timestamp as i64).collect();
+
+    let date_series = Series::new("date".into(), timestamps)
+        .cast(&DataType::Datetime(TimeUnit::Milliseconds, None))?;
+
     df![
-        "date" => quotes.iter().map(|q| q.timestamp).collect::<Vec<_>>(),
+        "date" => date_series,
         "open" => quotes.iter().map(|q| q.open).collect::<Vec<_>>(),
         "high" => quotes.iter().map(|q| q.high).collect::<Vec<_>>(),
         "low" => quotes.iter().map(|q| q.low).collect::<Vec<_>>(),
