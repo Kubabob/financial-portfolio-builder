@@ -11,10 +11,6 @@ use tower_http::cors::{Any, CorsLayer};
 
 use tracing_subscriber;
 
-use routes::quotes::get_dataframe;
-
-use crate::routes::stats::{missing_values, missing_values_count, missing_values_percent};
-
 #[tokio::main]
 async fn main() {
     // initialize tracing
@@ -28,7 +24,6 @@ async fn main() {
     // build our application with a route
     let app = Router::new()
         // `GET /` goes to `root`
-        .without_v07_checks()
         .route("/", get(root))
         .nest(
             "/api/finances",
